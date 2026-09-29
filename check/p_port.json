@@ -1,0 +1,5 @@
+[{"t": 0.5, "js": "window.__set({place:[-1480, 1500, -1.57], ctl:{hoist:0}, cam:{yaw:3.3,pitch:0.08,dist:60}}); 1"},
+ {"t": 6, "shot": "a"},
+ {"t": 6.1, "js": "window.__set({cam:{yaw:2.5,pitch:0.2,dist:130}})"}, {"t": 9, "shot": "b"},
+ {"t": 9.1, "js": "window.__set({cam:{yaw:0.0,pitch:0.05,dist:40}})"}, {"t": 12, "shot": "c"},
+ {"t": 12.1, "js": "window.__set({cam:{yaw:3.9,pitch:0.04,dist:25}})"}, {"t": 15, "shot": "d"}]

@@ -1,0 +1,5 @@
+[{"t": 0.5, "js": "window.__set({place:[0,0,0.9], wind:9}); 1"},
+ {"t": 1.0, "js": "window.__renderAt(Math.round((window.__state().t+50)*30),30)"},
+ {"t": 1.1, "js": "window.__set({cam:{yaw:0.4,pitch:0.9,dist:90}}); window.__renderAt(Math.round((window.__state().t+0.5)*30),30)"}, {"t": 1.5, "shot": "top"},
+ {"t": 1.6, "js": "window.__set({cam:{yaw:0.9,pitch:0.12,dist:40}}); window.__renderAt(Math.round((window.__state().t+0.5)*30),30)"}, {"t": 2.0, "shot": "low"},
+ {"t": 2.1, "js": "window.__set({cam:{yaw:2.6,pitch:0.2,dist:35}}); window.__renderAt(Math.round((window.__state().t+0.5)*30),30)"}, {"t": 2.5, "shot": "bow"}]

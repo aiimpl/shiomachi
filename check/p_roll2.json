@@ -1,0 +1,2 @@
+[{"t": 0.5, "js": "(()=>{window.__set({place:[0,0,0], seaK:0, ctl:{hoist:0}}); window.__sim(2); const q=window.__boat; q.angV.set(0,0,0.15).applyQuaternion(q.quat); const b=[]; for(let i=0;i<60;i++){window.__sim(0.25); b.push(window.__state().heel)} return b})()"},
+ {"t": 1.0, "js": "(()=>{const q=window.__boat; return {mass:q.mass, I:q.I.toArray().map(Math.round), cols:q.cols.length, cob:q.cob0.toArray()}})()"}]

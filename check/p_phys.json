@@ -1,0 +1,4 @@
+[{"t": 0.5, "js": "window.__set({place:[0,0,0]}); window.__sim(60).map(s=>[s.t,s.speed,s.heel,s.pitch,s.heading,s.brace,s.aoa,s.sailF])"},
+ {"t": 1.0, "js": "window.__set({place:[0,0,Math.PI/2]}); window.__sim(60).map(s=>[s.t,s.speed,s.heel,s.pitch,s.heading,s.brace,s.aoa,s.sailF])"},
+ {"t": 1.5, "js": "window.__set({place:[0,0,Math.PI]}); window.__sim(60).map(s=>[s.t,s.speed,s.heel,s.pitch,s.heading,s.brace,s.aoa,s.sailF])"},
+ {"t": 2.0, "js": "window.__set({place:[0,0,-Math.PI/2]}); window.__sim(60).map(s=>[s.t,s.speed,s.heel,s.pitch,s.heading,s.brace,s.aoa,s.sailF])"}]

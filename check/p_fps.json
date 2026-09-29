@@ -1,0 +1,4 @@
+[{"t": 0.5, "js": "window.__set({place:[-1480, 1500, -1.57], cam:{yaw:0.0,pitch:0.08,dist:50}}); window.__fps=[]; (function f(t){ window.__fps.push(t); if (window.__fps.length<400) requestAnimationFrame(f); })(performance.now()); 1"},
+ {"t": 7, "js": "(()=>{const a=window.__fps; const d=[]; for(let i=1;i<a.length;i++) d.push(a[i]-a[i-1]); d.sort((x,y)=>x-y); return {n:d.length, median:+d[d.length>>1].toFixed(1), p90:+d[Math.floor(d.length*0.9)].toFixed(1)}})()"},
+ {"t": 7.1, "js": "window.__set({place:[0, 0, 0.9]}); window.__fps=[]; (function f(t){ window.__fps.push(t); if (window.__fps.length<400) requestAnimationFrame(f); })(performance.now()); 1"},
+ {"t": 14, "js": "(()=>{const a=window.__fps; const d=[]; for(let i=1;i<a.length;i++) d.push(a[i]-a[i-1]); d.sort((x,y)=>x-y); return {n:d.length, median:+d[d.length>>1].toFixed(1), p90:+d[Math.floor(d.length*0.9)].toFixed(1)}})()"}]

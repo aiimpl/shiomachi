@@ -1,0 +1,1 @@
+[{"t": 0.5, "js": "({n: window.__ports.group.children.length, lan: window.__ports.lanterns.map(v=>v.toArray().map(Math.round)), first: window.__ports.group.children.slice(0,6).map(m=>m.position.toArray().map(Math.round)), h: [-1330,-1400,-1500,-1600,-1700].map(x=>Math.round(window.__H(x,1480)))})"}]

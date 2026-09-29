@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>潮待ち</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22%3E%3Cpath d=%22M3 12h10l-2 2H5z M8 2v9 M8 3l4 7H8z%22 fill=%22%23e8e0d0%22/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600&family=Noto+Sans+JP:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root { --ink: #f2ede4; --dim: rgba(242, 237, 228, .6); --faint: rgba(242, 237, 228, .35); }
+  html, body { margin: 0; height: 100%; background: #0c0d0e; overflow: hidden; }
+  #stage { position: absolute; left: 50%; top: 50%; width: 1600px; height: 900px; transform-origin: 50% 50%; overflow: hidden; }
+  #c { width: 100%; height: 100%; display: block; }
+  #hud { position: absolute; inset: 0; pointer-events: none; color: var(--ink); font: 400 12px/1.4 'Noto Sans JP', system-ui, sans-serif; text-shadow: 0 1px 8px rgba(0,0,0,.35); }
+  .tl { position: absolute; left: 30px; top: 26px; }
+  .tl b { font: 600 26px/1 'Shippori Mincho', serif; letter-spacing: .12em; }
+  .tl i { font-style: normal; display: block; margin-top: 8px; color: var(--dim); letter-spacing: .2em; font-size: 11px; }
+  .bl { position: absolute; left: 30px; bottom: 26px; display: flex; align-items: flex-end; gap: 26px; }
+  .spd b { font: 500 44px/1 'Shippori Mincho', serif; }
+  .spd i { font-style: normal; color: var(--dim); margin-left: 6px; letter-spacing: .15em; }
+  .aw { width: 46px; height: 46px; border-radius: 50%; border: 1px solid var(--faint); position: relative; }
+  .aw span { position: absolute; left: 50%; top: 4px; width: 2px; height: 38px; margin-left: -1px; transform-origin: 50% 19px; }
+  .aw span::before { content: ''; position: absolute; left: -5px; top: 0; border: 6px solid transparent; border-top: 9px solid var(--ink); }
+  .meta { color: var(--dim); letter-spacing: .12em; }
+  .keys { position: absolute; right: 30px; bottom: 26px; color: var(--dim); font-size: 11px; letter-spacing: .08em; text-align: right; line-height: 1.9; }
+  kbd { display: inline-block; min-width: 14px; padding: 0 4px; border: 1px solid var(--faint); border-radius: 3px; font: 500 10px/15px 'Noto Sans JP', sans-serif; color: var(--ink); text-align: center; }
+  #hud.hide { display: none; }
+  .compass { position: absolute; left: 50%; top: 22px; transform: translateX(-50%); text-align: center; }
+  .compass .win { position: relative; width: 600px; height: 30px; overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent); mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent); }
+  #strip { position: absolute; left: 300px; top: 0; height: 30px; }
+  #strip i { position: absolute; top: 0; font-style: normal; transform: translateX(-50%); white-space: nowrap; }
+  #strip i.tick { width: 1px; height: 6px; background: var(--faint); top: 20px; }
+  #strip i.lab { font: 600 13px/1 'Shippori Mincho', serif; top: 4px; letter-spacing: 0; }
+  #windmark, #destmark { position: absolute; top: 20px; transform: translateX(-50%); font-size: 9px; line-height: 10px; transition: opacity .3s; }
+  #windmark { color: #bcd7ee; font-weight: 600; }
+  #destmark { color: #f0c27a; top: 19px; }
+  .compass .bow { position: absolute; left: 300px; top: 0; width: 1px; height: 30px; background: var(--ink); opacity: .7; }
+  #dest { margin-top: 6px; color: var(--dim); font-size: 11px; letter-spacing: .12em; }
+  #msg { position: absolute; left: 50%; top: 38%; transform: translate(-50%, -50%); font: 500 26px/1.5 'Shippori Mincho', serif; letter-spacing: .12em; text-align: center; opacity: 0; transition: opacity 1.2s; white-space: pre-line; }
+  #msg.on { opacity: 1; }
+  #anchor { position: absolute; right: 30px; top: 30px; display: none; color: var(--dim); letter-spacing: .2em; }
+  #trim { color: var(--ink); margin-bottom: 4px; letter-spacing: .15em; }
+  #title { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--ink);
+           background: radial-gradient(ellipse at center, rgba(10,14,18,.15), rgba(10,14,18,.55)); transition: opacity 1.5s; text-align: center; }
+  #title.gone { opacity: 0; pointer-events: none; }
+  #stage:has(#title:not(.gone)) #hud { opacity: 0; }
+  #hud { transition: opacity 1.5s; }
+  #title h1 { font: 600 76px/1 'Shippori Mincho', serif; letter-spacing: .3em; margin: 0 0 0 .3em; text-shadow: 0 2px 24px rgba(0,0,0,.35); }
+  #title .sub { font: 500 16px/1 'Shippori Mincho', serif; letter-spacing: .5em; margin: 22px 0 40px; color: var(--dim); }
+  #title .goal { font: 400 14px/2 'Noto Sans JP', sans-serif; letter-spacing: .12em; margin: 0 0 36px; }
+  #title .hint { font: 400 11px/1.8 'Noto Sans JP', sans-serif; color: var(--dim); letter-spacing: .08em; margin-top: 26px; }
+  #go { font: 500 15px/1 'Shippori Mincho', serif; letter-spacing: .4em; padding: 14px 34px 14px 40px; color: var(--ink); background: rgba(20,26,30,.35);
+        border: 1px solid rgba(242,237,228,.5); border-radius: 2px; cursor: pointer; }
+  #go:disabled { opacity: .5; cursor: default; }
+  #go:not(:disabled):hover { background: rgba(242,237,228,.12); }
+
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="c"></canvas>
+  <div id="hud">
+    <div class="tl"><b>潮待ち</b><i>弁才船・瀬戸内</i></div>
+    <div class="compass"><div class="win"><div id="strip"></div><span id="windmark" title="風上">風</span><span id="destmark">◆</span><em class="bow"></em></div><div id="dest"></div></div>
+    <div class="bl">
+      <div class="spd"><b id="spd">0.0</b><i>ノット</i></div>
+      <div class="aw" title="見かけの風（船から感じる風）"><span id="awarrow"></span></div>
+      <div class="meta"><div id="wind"></div><div id="tide"></div><div id="time"></div></div>
+    </div>
+    <div id="msg"></div>
+    <div id="anchor">錨泊中</div>
+    <div class="keys"><div id="trim"></div><kbd>A</kbd><kbd>D</kbd> 舵　<kbd>W</kbd><kbd>S</kbd> 帆を上げ下げ　<kbd>Q</kbd><kbd>E</kbd> 帆の向き　<kbd>T</kbd> 船頭まかせ　<kbd>R</kbd> 櫓　<kbd>Space</kbd> 錨　<kbd>C</kbd> 視点</div>
+  </div>
+  <div id="title">
+    <h1>潮待ち</h1>
+    <p class="sub">弁才船で瀬戸内を渡る</p>
+    <p class="goal">朝の大島の浦から、島々のあいだを抜けて向島の浦へ。<br>風の帯と潮を読み、日が暮れる前に錨を入れる。</p>
+    <button id="go" type="button" disabled>読み込み中</button>
+    <p class="hint">W で帆を上げ、A・D で舵。帆の向きは船頭にまかせても、Q・E で自分で合わせてもいい。</p>
+  </div>
+</div>
+<script type="importmap">{ "imports": { "three": "./vendor/three/build/three.module.js", "three/addons/": "./vendor/three/examples/jsm/" } }</script>
+<script>
+  function fit() { const s = Math.min(innerWidth / 1600, innerHeight / 900); document.getElementById('stage').style.transform = `translate(-50%, -50%) scale(${s})`; }
+  addEventListener('resize', fit); fit();
+  if (new URLSearchParams(location.search).has('clean')) { document.getElementById('hud').classList.add('hide'); document.getElementById('title').classList.add('gone'); }
+</script>
+<script type="module" src="src/main.js"></script>
+</body>
+</html>

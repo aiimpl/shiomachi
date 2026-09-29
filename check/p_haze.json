@@ -1,0 +1,4 @@
+[{"t": 0.5, "js": "window.__freezeClock=true; window.__set({hour: 12.5, place:[-400, 2600, 3.6], ctl:{hoist:0}, cam:{yaw:0.0,pitch:0.02,dist:30}}); window.__set({hide:['ship','ropes']}); window.__renderAt(Math.round((window.__state().t+4)*30),30); 1"},
+ {"t": 2, "shot": "h1"},
+ {"t": 2.1, "js": "window.__set({place:[-400, 2600, 5.2]}); window.__renderAt(Math.round((window.__state().t+2)*30),30); 1"}, {"t": 3.5, "shot": "h2"},
+ {"t": 3.6, "js": "window.__set({place:[3000, 3000, 3.14]}); window.__renderAt(Math.round((window.__state().t+2)*30),30); 1"}, {"t": 5, "shot": "h3"}]
