@@ -1,9 +1,0 @@
-[{"t": 1, "shot": "t0"},
- {"t": 1.2, "js": "document.getElementById('go').click(); 1"},
- {"t": 3, "shot": "t1"},
- {"t": 3.1, "js": "window.dispatchEvent(new KeyboardEvent('keydown',{code:'KeyW'})); 1"},
- {"t": 9, "js": "window.dispatchEvent(new KeyboardEvent('keyup',{code:'KeyW'})); window.__state()"},
- {"t": 20, "shot": "t2"}, {"t": 20.1, "js": "window.__state()"},
- {"t": 20.2, "js": "window.dispatchEvent(new KeyboardEvent('keydown',{code:'KeyA'})); 1"},
- {"t": 24, "js": "window.dispatchEvent(new KeyboardEvent('keyup',{code:'KeyA'})); 1"},
- {"t": 35, "shot": "t3"}, {"t": 35.1, "js": "window.__state()"}]

@@ -1,8 +1,0 @@
-[{"t": 0.5, "js": "window.__set({place:[0,0,0.9], cam:{yaw:0.0,pitch:0.08,dist:50}}); 1"},
- {"t": 2, "js": "['sea all', window.__gpuProfile(15).main]"},
- {"t": 3, "js": "window.__set({hide:['ocean']}); ['sea -ocean', window.__gpuProfile(15).main]"},
- {"t": 4, "js": "window.__set({show:['ocean'], hide:['land']}); ['sea -land', window.__gpuProfile(15).main]"},
- {"t": 5, "js": "window.__set({show:['land'], hide:['ship']}); ['sea -ship', window.__gpuProfile(15).main]"},
- {"t": 6, "js": "window.__set({show:['ship']}); window.__set({place:[-1480, 1500, -1.57]}); ['port all', window.__gpuProfile(15).main]"},
- {"t": 7, "js": "window.__set({hide:['trees']}); ['port -trees', window.__gpuProfile(15).main]"},
- {"t": 8, "js": "window.__set({show:['trees'], hide:['ocean']}); ['port -ocean', window.__gpuProfile(15).main]"}]

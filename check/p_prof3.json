@@ -1,4 +1,0 @@
-[{"t": 0.5, "js": "window.__set({place:[0,0,0.9], cam:{yaw:0.0,pitch:0.08,dist:50}}); 1"},
- {"t": 2, "js": "window.__gpuProfile(20)"},
- {"t": 6, "js": "window.__set({place:[-1480, 1500, -1.57]}); 1"},
- {"t": 8, "js": "window.__gpuProfile(20)"}]

@@ -1,3 +1,0 @@
-[{"t": 0.5, "js": "window.__set({place:[0,0,0.9], ctl:{hoist:0}, cam:{yaw:0.4,pitch:1.2,dist:90}}); window.__renderAt(Math.round((window.__state().t+6)*30),30)"}, {"t": 1.0, "shot": "still"},
- {"t": 1.1, "js": "window.__set({place:[0,0,0.9], ctl:{hoist:0}}); window.__boat.vel.set(3*Math.sin(0.9),0,3*Math.cos(0.9)); window.__renderAt(Math.round((window.__state().t+3)*30),30)"}, {"t": 1.6, "shot": "move3"},
- {"t": 1.7, "js": "window.__renderAt(Math.round((window.__state().t+10)*30),30)"}, {"t": 2.2, "shot": "move10"}]

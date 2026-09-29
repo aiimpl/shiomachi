@@ -77,6 +77,7 @@ web/
   src/shadows.js  影                   src/post.js    仕上げ（灰の道から）
   data/           焼いたデータ（glb・webp・高さ）
 tools/probe.py    Chrome で開いて操作し、状態と画面を記録する
+tools/render.py   映像を1コマずつ書き出す（make video で音と mp4 まで）
 ```
 
 ## ライセンス

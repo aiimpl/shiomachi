@@ -6,3 +6,4 @@ web/data/*.png
 __pycache__/
 *.blend1
 .DS_Store
+check/

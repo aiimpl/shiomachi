@@ -1,3 +1,0 @@
-[{"t": 0.5, "js": "window.__set({place:[0,0,0.9], ctl:{hoist:0}}); window.__renderAt(Math.round((window.__state().t+0.2)*30),30); window.__wakeStats()"},
- {"t": 0.8, "js": "window.__renderAt(Math.round((window.__state().t+1)*30),30); window.__wakeStats()"},
- {"t": 1.1, "js": "window.__renderAt(Math.round((window.__state().t+3)*30),30); window.__wakeStats()"}]

@@ -1,3 +1,0 @@
-[{"t": 0.5, "js": "window.__set({place:[0,0,Math.PI/2], seaK:0}); window.__sim(40).map(s=>[s.t,s.speed,s.heel,s.pitch,s.sailF])"},
- {"t": 1.0, "js": "window.__set({place:[0,0,Math.PI/2], seaK:1, ctl:{hoist:0}}); window.__sim(40).map(s=>[s.t,s.speed,s.heel,s.pitch,s.sailF])"},
- {"t": 1.5, "js": "(()=>{window.__set({place:[0,0,Math.PI/2], seaK:0, ctl:{hoist:0}}); const b=[]; window.__sim(1); for(let i=0;i<40;i++){window.__sim(0.25); b.push(window.__state().heel)} return b})()"}]

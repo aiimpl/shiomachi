@@ -1,2 +1,0 @@
-[{"t": 0.5, "js": "window.__freezeClock=true; window.__renderAt(Math.round((window.__state().t+1)*30),30); const r=window.__renderer; r.info.autoReset=false; r.info.reset(); window.__renderAt(Math.round((window.__state().t+0.05)*30),30); ({...r.info.render})"},
- {"t": 1.5, "js": "window.__set({place:[0,0,0.9]}); window.__renderAt(Math.round((window.__state().t+1)*30),30); const r=window.__renderer; r.info.reset(); window.__renderAt(Math.round((window.__state().t+0.05)*30),30); ({...r.info.render})"}]
