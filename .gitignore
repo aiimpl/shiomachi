@@ -1,9 +1,9 @@
 .venv/
-build/
-check/out/
+/build/
+/check/out/
 ref/*.jpg
 web/data/*.png
 __pycache__/
 *.blend1
 .DS_Store
-check/
+/check/

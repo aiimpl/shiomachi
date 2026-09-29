@@ -23,6 +23,7 @@ import { Tide } from './tide.js';
 import { makeCrew } from './people.js';
 import { makeBoats } from './boats.js';
 import { Film, FILM_LEN } from './film.js';
+import { t, place, applyStatic, toggleLang } from './i18n.js';
 
 const QS = new URLSearchParams(location.search);
 const RENDER = QS.has('render');
@@ -149,11 +150,11 @@ const lastPos = new THREE.Vector3();
 input.onPress = (code) => {
   if (!started) return;
   if (code === 'Space') {
-    if (boat.ctl.anchor) { boat.ctl.anchor = null; hud.message('錨を上げた', 3); }
+    if (boat.ctl.anchor) { boat.ctl.anchor = null; hud.message(t('anchorUp'), 3); }
     else {
       const f = boat.forward(new THREE.Vector3());
       boat.ctl.anchor = { x: boat.pos.x + f.x * 12, z: boat.pos.z + f.z * 12, len: 30 };
-      hud.message('錨を入れた', 3);
+      hud.message(t('anchorDown'), 3);
     }
   }
   if (code === 'KeyC') cam.cycle();
@@ -164,8 +165,8 @@ function checkArrival() {
   if (d < 220 && boat.ctl.anchor) {
     arrived = true;
     const h = Math.floor(hour), mi = Math.floor((hour - h) * 60), took = (hour - dayStart);
-    hud.message(`${dest.name}に着いた\n${h}時${String(mi).padStart(2, '0')}分　${(logDist / 1000).toFixed(1)}km を ${Math.floor(took)}時間${Math.round((took % 1) * 60)}分`, 12);
-  } else if (d < 400 && !boat.ctl.anchor && Math.random() < 0.002) hud.message('港に入ったら Space で錨を入れる', 4);
+    hud.message(t('arrive')(place(dest.name), h, mi, (logDist / 1000).toFixed(1), Math.floor(took), Math.round((took % 1) * 60)), 12);
+  } else if (d < 400 && !boat.ctl.anchor && Math.random() < 0.002) hud.message(t('anchorHint'), 4);
 }
 // Recording: the scripted film drives the hour, the ship and the camera (film.js)
 let film = null, filmT = 0, filmFade = 1;
@@ -188,10 +189,12 @@ if (RENDER) {
 }
 const titleEl = document.getElementById('title'), goBtn = document.getElementById('go');
 if (started) titleEl.classList.add('gone');
-goBtn.disabled = false; goBtn.textContent = '舟を出す';
+applyStatic();
+document.getElementById('lang').addEventListener('click', (e) => { toggleLang(); e.currentTarget.blur(); });
+goBtn.disabled = false; goBtn.dataset.t = 'go'; goBtn.innerHTML = t('go');
 goBtn.addEventListener('click', () => {
   started = true; titleEl.classList.add('gone'); sound.start(); dayStart = hour;
-  hud.message(`${home?.name ?? ''}\n${dest ? dest.name + 'へ' : ''}`, 5);
+  hud.message(t('depart')(place(home?.name ?? ''), dest ? place(dest.name) : ''), 5);
 });
 const sound = new Sound();
 // browsers only allow audio after a gesture

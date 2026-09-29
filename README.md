@@ -1,3 +1,13 @@
+# Shiomachi（潮待ち）— a bezaisen on the Seto Inland Sea
+
+A browser game: sail an Edo-period cargo ship (bezaisen) between the islands of the Seto Inland Sea, from harbour to harbour, reading the wind and the tide.
+It runs on three.js. No photos, videos, hand-painted textures or ready-made 3D models: the ship and the harbour towns were built plank by plank by Python scripts driving Blender, the islands are eroded heightfields, and the sea, sky, haze, sail, wake and sound are computed at runtime.
+The interface is in English by default; the button at the top right (or `?lang=ja`) switches to Japanese.
+
+**Play: https://aiimpl.github.io/shiomachi/**
+
+---
+
 # 潮待ち — 弁才船で瀬戸内を渡る
 
 江戸時代の千石船（弁才船）を操って、瀬戸内の島々のあいだを港から港へ渡るブラウザのゲームです。
@@ -19,6 +29,8 @@ three.js で動きます。写真・動画・手描きのテクスチャ・既�
 | Space | 錨を入れる・上げる |
 | C | 視点（後ろ・艫の上・遠望） |
 | ドラッグ・ホイール | 視点を回す・寄る |
+
+画面は英語が既定です。右上のボタンか `?lang=ja` で日本語にできます（選んだ言語はブラウザに覚えさせます）。
 
 時刻は実時間1秒でゲーム内20秒進みます（1時間＝3分）。URL に `?t=16.5`（開始時刻）、`?wind=8`（風速 m/s）、`?wdir=0.9`（風向）、`?ts=60`（時間の速さ）を付けて変えられます。
 
@@ -74,6 +86,7 @@ web/
   src/wind.js     風の帯               src/sky.js     空・霞・太陽の位置
   src/islands.js  島                   src/trees.js   松
   src/port.js     港町                 src/audio.js   音
+  src/i18n.js     画面の言葉（英語・日本語）  src/film.js    映像の台本
   src/shadows.js  影                   src/post.js    仕上げ（灰の道から）
   data/           焼いたデータ（glb・webp・高さ）
 tools/probe.py    Chrome で開いて操作し、状態と画面を記録する

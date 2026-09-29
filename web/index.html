@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ja">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -40,7 +40,15 @@
   #dest { margin-top: 6px; color: var(--dim); font-size: 11px; letter-spacing: .12em; }
   #msg { position: absolute; left: 50%; top: 38%; transform: translate(-50%, -50%); font: 500 26px/1.5 'Shippori Mincho', serif; letter-spacing: .12em; text-align: center; opacity: 0; transition: opacity 1.2s; white-space: pre-line; }
   #msg.on { opacity: 1; }
-  #anchor { position: absolute; right: 30px; top: 30px; display: none; color: var(--dim); letter-spacing: .2em; }
+  #lang { position: absolute; right: 26px; top: 22px; pointer-events: auto; cursor: pointer; font: 500 12px/1 'Noto Sans JP', sans-serif; letter-spacing: .12em;
+          color: var(--ink); background: rgba(20,26,30,.35); border: 1px solid rgba(242,237,228,.4); border-radius: 2px; padding: 7px 12px; z-index: 6; }
+  #lang:hover { background: rgba(242,237,228,.12); }
+  html[lang=en] #title .sub { letter-spacing: .2em; }
+  html[lang=en] #go { letter-spacing: .16em; padding: 14px 34px; }
+  html[lang=en] #msg { letter-spacing: .05em; }
+  html[lang=en] .tl b { letter-spacing: .06em; }
+  #title .kanji { font: 600 20px/1 'Shippori Mincho', serif; letter-spacing: .5em; margin: 18px 0 0 .5em; color: var(--dim); }
+  #anchor { position: absolute; right: 30px; top: 66px; display: none; color: var(--dim); letter-spacing: .2em; }
   #trim { color: var(--ink); margin-bottom: 4px; letter-spacing: .15em; }
   #title { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--ink);
            background: radial-gradient(ellipse at center, rgba(10,14,18,.15), rgba(10,14,18,.55)); transition: opacity 1.5s; text-align: center; }
@@ -50,7 +58,7 @@
   #endcard i { display: block; font: 500 17px/1 'Shippori Mincho', serif; font-style: normal; letter-spacing: .5em; margin-top: 26px; color: rgba(242,237,228,.75); }
   #stage:has(#title:not(.gone)) #hud { opacity: 0; }
   #hud { transition: opacity 1.5s; }
-  #title h1 { font: 600 76px/1 'Shippori Mincho', serif; letter-spacing: .3em; margin: 0 0 0 .3em; text-shadow: 0 2px 24px rgba(0,0,0,.35); }
+  #title h1 { font: 600 76px/1 'Shippori Mincho', serif; letter-spacing: .12em; margin: 0 0 0 .12em; text-shadow: 0 2px 24px rgba(0,0,0,.35); }
   #title .sub { font: 500 16px/1 'Shippori Mincho', serif; letter-spacing: .5em; margin: 22px 0 40px; color: var(--dim); }
   #title .goal { font: 400 14px/2 'Noto Sans JP', sans-serif; letter-spacing: .12em; margin: 0 0 36px; }
   #title .hint { font: 400 11px/1.8 'Noto Sans JP', sans-serif; color: var(--dim); letter-spacing: .08em; margin-top: 26px; }
@@ -65,31 +73,33 @@
 <div id="stage">
   <canvas id="c"></canvas>
   <div id="hud">
-    <div class="tl"><b>潮待ち</b><i>弁才船・瀬戸内</i></div>
+    <div class="tl"><b data-t="title">Shiomachi</b><i data-t="titleSub">a bezaisen on the Seto Inland Sea</i></div>
     <div class="compass"><div class="win"><div id="strip"></div><span id="windmark" title="風上">風</span><span id="destmark">◆</span><em class="bow"></em></div><div id="dest"></div></div>
     <div class="bl">
-      <div class="spd"><b id="spd">0.0</b><i>ノット</i></div>
-      <div class="aw" title="見かけの風（船から感じる風）"><span id="awarrow"></span></div>
+      <div class="spd"><b id="spd">0.0</b><i data-t="knots">knots</i></div>
+      <div class="aw" data-t-title="aw"><span id="awarrow"></span></div>
       <div class="meta"><div id="wind"></div><div id="tide"></div><div id="time"></div></div>
     </div>
     <div id="msg"></div>
-    <div id="anchor">錨泊中</div>
-    <div class="keys"><div id="trim"></div><kbd>A</kbd><kbd>D</kbd> 舵　<kbd>W</kbd><kbd>S</kbd> 帆を上げ下げ　<kbd>Q</kbd><kbd>E</kbd> 帆の向き　<kbd>T</kbd> 船頭まかせ　<kbd>R</kbd> 櫓　<kbd>Space</kbd> 錨　<kbd>C</kbd> 視点</div>
+    <div id="anchor" data-t="anchored">At anchor</div>
+    <div class="keys"><div id="trim"></div><div data-t="keys"></div></div>
   </div>
   <div id="endcard"><b>潮待ち</b><i>弁才船で瀬戸内を渡る</i></div>
   <div id="title">
-    <h1>潮待ち</h1>
-    <p class="sub">弁才船で瀬戸内を渡る</p>
-    <p class="goal">朝の大島の浦から、島々のあいだを抜けて向島の浦へ。<br>風の帯と潮を読み、日が暮れる前に錨を入れる。</p>
-    <button id="go" type="button" disabled>読み込み中</button>
-    <p class="hint">W で帆を上げ、A・D で舵。帆の向きは船頭にまかせても、Q・E で自分で合わせてもいい。</p>
+    <h1 data-t="title">Shiomachi</h1>
+    <p class="kanji">潮待ち</p>
+    <p class="sub" data-t="cardSub">Waiting for the Tide</p>
+    <p class="goal" data-t="goal"></p>
+    <button id="go" type="button" disabled data-t="loading">Loading</button>
+    <p class="hint" data-t="hint"></p>
   </div>
+  <button id="lang" type="button" data-t="lang">日本語</button>
 </div>
 <script type="importmap">{ "imports": { "three": "./vendor/three/build/three.module.js", "three/addons/": "./vendor/three/examples/jsm/" } }</script>
 <script>
   function fit() { const s = Math.min(innerWidth / 1600, innerHeight / 900); document.getElementById('stage').style.transform = `translate(-50%, -50%) scale(${s})`; }
   addEventListener('resize', fit); fit();
-  if (new URLSearchParams(location.search).has('clean')) { document.getElementById('hud').classList.add('hide'); document.getElementById('title').classList.add('gone'); }
+  if (new URLSearchParams(location.search).has('clean') || new URLSearchParams(location.search).has('render')) { document.getElementById('hud').classList.add('hide'); document.getElementById('title').classList.add('gone'); document.getElementById('lang').style.display = 'none'; }
 </script>
 <script type="module" src="src/main.js"></script>
 </body>
