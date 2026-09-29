@@ -190,8 +190,9 @@ export class Boat {
       this.sail.aoa = aoa;
       this.sail.force = Math.hypot(f2.x, f2.y);
       // the cloth: depth grows with pressure, flogging when nearly edge-on; the draft moves toward the windward edge
-      const press = THREE.MathUtils.clamp(q / sArea / 30, 0, 1);
-      const target = aoa < 0.12 ? 0.15 : 0.5 + 1.3 * Math.sqrt(press) * Math.min(aoa / 0.5, 1);
+      const press = THREE.MathUtils.clamp(q / sArea / 30, 0, 1);   // 1 at ~7 m/s apparent wind
+      // a loose-footed square sail bags deeply: up to ~3.5 m in a good breeze with the wind well aft
+      const target = aoa < 0.12 ? 0.2 : 0.9 + 2.8 * Math.sqrt(press) * Math.min(aoa / 0.5, 1);
       this.sail.depth += (target - this.sail.depth) * Math.min(dt * 2.5, 1);
       this.sail.flog += ((aoa < 0.14 ? 1 - aoa / 0.14 : 0) * Math.min(awS / 4, 1) - this.sail.flog) * Math.min(dt * 3, 1);
       this.sail.draft = ca * 0.8;

@@ -18,9 +18,9 @@ function pineGeometry(seed, lod = 0) {
   const lean = new THREE.Vector3(rnd() - 0.5, 0, rnd() - 0.5).normalize().multiplyScalar(0.25 + rnd() * 0.4);
   const P = (t) => new THREE.Vector3(lean.x * H * t * t + Math.sin(t * 5 + seed) * 0.25, H * t, lean.z * H * t * t + Math.cos(t * 4 + seed) * 0.25);
   // trunk
-  const seg = lod ? 4 : 6, rings = lod ? 3 : 8, bark = [0.09, 0.075, 0.06];
+  const seg = lod ? 4 : 6, rings = lod ? 3 : 8, bark = [0.12, 0.065, 0.04];     // red pine: reddish bark
   for (let r = 0; r <= rings; r++) {
-    const t = r / rings, c = P(t), rad = 0.22 * (1 - t * 0.75);
+    const t = r / rings, c = P(t), rad = 0.3 * (1 - t * 0.7);
     for (let k = 0; k < seg; k++) {
       const a = (k / seg) * Math.PI * 2, n = new THREE.Vector3(Math.cos(a), 0, Math.sin(a));
       push(c.clone().addScaledVector(n, rad), n, bark);
@@ -31,10 +31,10 @@ function pineGeometry(seed, lod = 0) {
     idx.push(a, a + seg, b, b, a + seg, b + seg);
   }
   // needle pads: 5-8 flattened clumps on the upper half, spreading out like an umbrella
-  const npads = 5 + Math.floor(rnd() * 4);
-  const lat = lod ? 2 : 4, lon = lod ? 5 : 7;
+  const npads = 7 + Math.floor(rnd() * 4);
+  const lat = lod ? 2 : 3, lon = lod ? 4 : 5;
   for (let p = 0; p < npads; p++) {
-    const t = 0.55 + 0.45 * (p / (npads - 1)) * (0.8 + 0.2 * rnd());
+    const t = 0.38 + 0.62 * (p / (npads - 1)) * (0.8 + 0.2 * rnd());
     const base = P(t);
     const ang = rnd() * Math.PI * 2, reach = (1 - t) * 4.5 + 0.6 + rnd() * 1.2;
     const c = base.clone().add(new THREE.Vector3(Math.cos(ang) * reach, 0.3 + rnd() * 0.5, Math.sin(ang) * reach));
@@ -44,25 +44,31 @@ function pineGeometry(seed, lod = 0) {
     const b0 = push(base.clone().addScaledVector(side, 0.06), side, bark), b1 = push(base.clone().addScaledVector(side, -0.06), side.clone().negate(), bark);
     const b2 = push(c.clone().addScaledVector(side, 0.03), side, bark), b3 = push(c.clone().addScaledVector(side, -0.03), side.clone().negate(), bark);
     idx.push(b0, b2, b1, b1, b2, b3);
-    // pad: a squashed icosphere-ish lump
-    const rx = 2.0 + rnd() * 1.6, ry = 0.8 + rnd() * 0.5, rz = 1.9 + rnd() * 1.5;
-    const green = [0.028 + rnd() * 0.012, 0.045 + rnd() * 0.015, 0.02 + rnd() * 0.008];
-    const start = pos.length / 3;
-    for (let i = 0; i <= lat; i++) {
-      const v = i / lat, th = v * Math.PI;
-      for (let j = 0; j < lon; j++) {
-        const ph = (j / lon) * Math.PI * 2;
-        const n = new THREE.Vector3(Math.sin(th) * Math.cos(ph), Math.cos(th), Math.sin(th) * Math.sin(ph));
-        const bump = 0.8 + 0.4 * rnd();
-        const q = new THREE.Vector3(n.x * rx * bump, n.y * ry * (n.y < 0 ? 0.6 : 1) * bump, n.z * rz * bump).add(c);
-        // lighter on top (sun-bleached needle tips), darker underneath
-        const sh = 0.55 + 0.45 * (n.y * 0.5 + 0.5);
-        push(q, n, [green[0] * sh, green[1] * sh, green[2] * sh]);
+    // pad: a cluster of small lumpy clumps (needle tufts), flat below and domed above, so the outline is ragged
+    const rx = 1.9 + rnd() * 1.4, ry = 0.7 + rnd() * 0.4, rz = 1.8 + rnd() * 1.3;
+    const green = [0.024 + rnd() * 0.01, 0.038 + rnd() * 0.013, 0.018 + rnd() * 0.007];
+    const tufts = lod ? 2 : 5;
+    for (let q = 0; q < tufts; q++) {
+      const tc = c.clone().add(new THREE.Vector3((rnd() - 0.5) * rx * 1.3, (rnd() - 0.3) * ry * 0.8, (rnd() - 0.5) * rz * 1.3));
+      const tr = (lod ? 0.75 : 0.55) * Math.min(rx, rz) * (0.6 + 0.5 * rnd());
+      const start = pos.length / 3;
+      for (let i = 0; i <= lat; i++) {
+        const v = i / lat, th = v * Math.PI;
+        for (let j = 0; j < lon; j++) {
+          const ph = (j / lon) * Math.PI * 2 + i * 0.4;
+          const n = new THREE.Vector3(Math.sin(th) * Math.cos(ph), Math.cos(th), Math.sin(th) * Math.sin(ph));
+          const bump = 0.72 + 0.5 * rnd();
+          const q2 = new THREE.Vector3(n.x * tr * bump, n.y * tr * 0.55 * bump * (n.y < 0 ? 0.45 : 1), n.z * tr * bump).add(tc);
+          // needle tips catch the light on top, the inside of the clump is dark
+          const sh = 0.45 + 0.55 * (n.y * 0.5 + 0.5);
+          const jn = n.clone().add(new THREE.Vector3(rnd() - 0.5, rnd() - 0.5, rnd() - 0.5).multiplyScalar(0.9)).normalize();
+          push(q2, jn, [green[0] * sh, green[1] * sh, green[2] * sh]);
+        }
       }
-    }
-    for (let i = 0; i < lat; i++) for (let j = 0; j < lon; j++) {
-      const a = start + i * lon + j, b = start + i * lon + (j + 1) % lon;
-      idx.push(a, b, a + lon, b, b + lon, a + lon);
+      for (let i = 0; i < lat; i++) for (let j = 0; j < lon; j++) {
+        const a2 = start + i * lon + j, b2 = start + i * lon + (j + 1) % lon;
+        idx.push(a2, b2, a2 + lon, b2, b2 + lon, a2 + lon);
+      }
     }
   }
   const g = new THREE.BufferGeometry();
@@ -73,12 +79,12 @@ function pineGeometry(seed, lod = 0) {
   return g;
 }
 
-export function makeTrees(islands, patch, { maxPerKind = 16000, radius = 800 } = {}) {
+export function makeTrees(islands, patch, { maxPerKind = 12000, radius = 800 } = {}) {
   const F = islands.near;
   const rnd = mulberry(99);
   // candidate positions on a jittered 7 m grid over all land
   const cand = [];
-  const step = 5;
+  const step = 4.2;
   const at = (x, z) => islands.height(x, z);
   for (let z = -F.half + 20; z < F.half - 20; z += step) for (let x = -F.half + 20; x < F.half - 20; x += step) {
     const px = x + (rnd() - 0.5) * step, pz = z + (rnd() - 0.5) * step;

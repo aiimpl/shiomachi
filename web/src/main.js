@@ -20,6 +20,8 @@ import { makeTrees } from './trees.js';
 import { loadPorts } from './port.js';
 import { Sound } from './audio.js';
 import { Tide } from './tide.js';
+import { makeCrew } from './people.js';
+import { makeBoats } from './boats.js';
 
 const QS = new URLSearchParams(location.search);
 const RENDER = QS.has('render');
@@ -97,11 +99,14 @@ const trees = QS.has('noland') ? null : makeTrees(islands, patch);
 if (trees) world.add(trees.group);
 const ports = QS.has('noland') ? null : await loadPorts('data/', islands, patch, renderer.capabilities.getMaxAnisotropy());
 if (ports) { world.add(ports.group); for (const m of ports.group.children) shadows.addCaster(m); }
+const boats = QS.has('noland') ? null : makeBoats(islands, sea, patch);
+if (boats) world.add(boats.group);
 
 // ---- Ship
 const ship = await loadShip('data/', { aniso: renderer.capabilities.getMaxAnisotropy(), patch, U, skyU, seaU });
 world.add(ship.group, ship.ropeGroup);
-for (const m of ship.casters) shadows.addCaster(m, { ship: true });
+const crew = makeCrew(ship, patch);
+for (const m of [...ship.casters, ...crew.meshes]) shadows.addCaster(m, { ship: true });
 shadows.renderLand(new THREE.Vector3());
 let lastLandSun = sunDir.clone();
 const tide = new Tide(islands.map?.strait ?? { x: 285, z: 60, dir: 2.16, width: 240 });
@@ -246,6 +251,8 @@ function frame(dt) {
   ship.update(boat, { hoist: boat.hoist, brace: boat.brace, rudder: boat.rudder, sailDepth: boat.sail.depth, sailSide: boat.sail.side, flog: boat.sail.flog, draft: boat.sail.draft });
   const fwd = boat.forward(new THREE.Vector3());
   wake.step(dt, { pos: boat.pos, fwd: new THREE.Vector2(fwd.x, fwd.z).normalize(), vel: new THREE.Vector2(boat.vel.x, boat.vel.z), heave: boat.heave, sub: 1 });
+  crew.update(simT, boat.rudder);
+  boats?.update(dt, simT, camera.position);
   cam.update(dt, boat);
   ocean.update(camera);
   islands.update(camera.position);
@@ -299,6 +306,7 @@ function loop(now) {
 window.__boat = boat;
 window.__ports = ports;
 window.__H = islands.height;
+window.__renderer = renderer;
 window.__state = () => ({ t: +simT.toFixed(2), pos: boat.pos.toArray().map((v) => +v.toFixed(2)), speed: +boat.speed.toFixed(2),
   heel: +(boat.heel * 57.3).toFixed(1), pitch: +(boat.pitch * 57.3).toFixed(1), heading: +(boat.heading * 57.3).toFixed(1),
   hoist: +boat.hoist.toFixed(2), brace: +(boat.brace * 57.3).toFixed(1), aoa: +(boat.sail.aoa * 57.3).toFixed(1), sailF: Math.round(boat.sail.force),
