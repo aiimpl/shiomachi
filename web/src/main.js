@@ -280,7 +280,12 @@ function frame(dt) {
   crew.update(simT, boat.rudder);
   boats?.update(dt, simT, camera.position);
   cam.update(dt, boat);
-  if (film) { const r = film.apply(filmT); filmFade = r.fade; }
+  if (film) {
+    const r = film.apply(filmT); filmFade = r.fade;
+    // a new shot moves the ship: pose its visuals again so the first frame of the shot already shows it
+    ship.update(boat, { hoist: boat.hoist, brace: boat.brace, rudder: boat.rudder, sailDepth: boat.sail.depth, sailSide: boat.sail.side, flog: boat.sail.flog, draft: boat.sail.draft });
+    film.apply(filmT);
+  }
   ocean.update(camera);
   islands.update(camera.position);
   trees?.update(camera.position);

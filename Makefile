@@ -5,7 +5,7 @@ B = $(BLENDER) -b --factory-startup --python-exit-code 1
 D = web/data
 C = build/check
 
-.PHONY: serve setup bake ship port islands preview check clean
+.PHONY: serve setup bake ship port islands preview frames audio video check clean
 
 # Open http://127.0.0.1:8795/ after this
 serve:
@@ -38,6 +38,16 @@ islands:
 # Check renders of the ship alone (Cycles), for comparing with the reference photographs
 preview:
 	$(B) -P bake/ship.py -- preview build/preview
+
+# The film (film.js): 780 frames at 2x, about 15 min on an Apple M Mac; resumes if interrupted
+frames:
+	$(PY) tools/render.py build/frames 0 -1 30
+
+audio: frames
+	$(PY) tools/audio.py build/frames build/shiomachi.wav 30
+
+video: audio
+	sh tools/encode.sh build/frames build/shiomachi.wav build/shiomachi.mp4
 
 # Syntax check of the Python side
 check:
