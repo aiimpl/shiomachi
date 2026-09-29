@@ -1,0 +1,5 @@
+[{"t": 0.5, "js": "window.__renderAt(390,30); 1"}, {"t": 1.0, "shot": "all"},
+ {"t": 1.1, "js": "window.__ocean.uniforms.uDbg.value.set(1,0,0,0); window.__renderAt(391,30); 1"}, {"t": 1.6, "shot": "skyrefl"},
+ {"t": 1.7, "js": "window.__ocean.uniforms.uDbg.value.set(0,1,0,0); window.__renderAt(392,30); 1"}, {"t": 2.2, "shot": "nobelow"},
+ {"t": 2.3, "js": "window.__ocean.uniforms.uDbg.value.set(0,0,1,0); window.__renderAt(393,30); 1"}, {"t": 2.8, "shot": "noglint"},
+ {"t": 2.9, "js": "window.__ocean.uniforms.uDbg.value.set(0,0,0,1); window.__renderAt(394,30); 1"}, {"t": 3.4, "shot": "nofoam"}]

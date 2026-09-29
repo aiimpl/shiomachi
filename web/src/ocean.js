@@ -52,20 +52,26 @@ float h12(vec2 p){ vec3 p3 = fract(vec3(p.xyx) * .1031); p3 += dot(p3, p3.yzx + 
 vec3 h32(vec2 p){ vec3 p3 = fract(vec3(p.xyx) * vec3(.1031, .1030, .0973)); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.xxy + p3.yzz) * p3.zyx); }
 float vn(vec2 p){ vec2 i = floor(p), f = fract(p); vec2 u = f * f * (3. - 2. * f);
   return mix(mix(h12(i), h12(i + vec2(1, 0)), u.x), mix(h12(i + vec2(0, 1)), h12(i + vec2(1, 1)), u.x), u.y); }
-// Ripples: 40 short waves leaning to the wind (normals only), longest first. Their constants come from JS
+// Ripples: 40 short waves (6 m down to a few cm) leaning to the wind (normals only), longest first. Their constants come from JS
 // (makeRipples): uRA = (dir.x, dir.z, k, omega), uRB = (amplitude at full gust, phase, variance of this and all shorter ones, lambda).
 // Once a ripple is too short for the pixel, it and every shorter one only add slope variance (for the glitter).
 // g = local gust strength
 uniform vec4 uRA[40]; uniform vec4 uRB[40];
-vec3 rippleSlope(vec2 p, float fw, float g){
+vec3 rippleSlope(vec2 p0, float fw, float g){
   vec2 s = vec2(0.); float unres = 0.;
   float gk = mix(0.5, 1.1, g);
+  // bend the crests: a slow warp of the coordinates (a few metres), so no crest runs straight for long
+  vec2 p = p0 + vec2(vn(p0 * 0.045 + 3.7) - 0.5, vn(p0 * 0.045 + 11.3) - 0.5) * 5.0;
   for (int i = 0; i < 40; i++){
     vec4 A = uRA[i], B = uRB[i];
     if (B.w < fw * 3.0) { unres = B.z * gk * gk; break; }
     float filt = smoothstep(fw * 3., fw * 8., B.w);
     float ph = A.z * dot(A.xy, p) - A.w * uTime + B.y;
-    float ak = B.x * A.z * gk;
+    // wave groups: the amplitude swells and fades along and across the crest (short-crested sea)
+    vec2 q = vec2(dot(A.xy, p), dot(vec2(-A.y, A.x), p)) * A.z;
+    float grp = sin(q.x * 0.13 + B.y * 3.0 - A.w * uTime * 0.5) * sin(q.y * 0.21 + B.y * 5.0);
+    float env = 0.25 + 1.5 * grp * grp;
+    float ak = B.x * A.z * gk * env;
     s += A.xy * ak * cos(ph) * filt;
     unres += ak * ak * 0.5 * (1. - filt);
   }
@@ -111,7 +117,7 @@ void main(){
   vec4 gs = gerstnerSlope(p, uTime, fw);
   vec3 rp = rippleSlope(p, fw, g);
   vec4 wk = wakeAt(p);
-  vec2 grad = gs.xy + rp.xy + wk.yz;
+  vec2 grad = gs.xy + rp.xy + wk.yz * 0.7;
   vec3 N = normalize(vec3(-grad.x, 1.0, -grad.y));
   vec2 suv = vClip.xy / vClip.w * 0.5 + 0.5;
   float shd = shipShadow(vW);
@@ -132,12 +138,24 @@ void main(){
   // Reflection
   float NV = max(dot(N, V), 1e-3);
   float F = 0.02 + 0.98 * pow(1. - NV, 5.);
-  vec2 off = vec2(grad.x, -grad.y) * 70. / max(dist, 4.);
-  vec3 refl = texture2D(uRefl, suv + off * uReflTexel * 60.).rgb;
-  // the mirrored render already holds the sky (clouds included); where the slope is large the flat mirror no longer
-  // applies, so blend toward the plain sky gradient in the reflected direction (cheap, no clouds)
+  // mirror distortion: the slope shifts the reflected image. The shift is limited (a few % of the screen): close to the
+  // camera an unlimited shift reads the mirror image at scattered places and draws a lattice of bright lines
+  vec2 off = vec2(grad.x, -grad.y) * 70. / max(dist, 12.);
+  float offL = length(off);
+  off *= min(1.0, 0.3 / max(offL, 1e-4));          // at most ~18 texels of the half-resolution mirror (~2 % of the screen)
+  // the rougher the water, the blurrier the mirror: pick a mip level from the unresolved slope spread (sig, below)
+  // and the resolved slope, so only the large shapes of sail, hull and islands survive in a breeze
+  vec2 ro2 = off * uReflTexel * 60.;
+  // resolved ripples break a mirror image into blotches too: fine, high-contrast detail (lattice, nails) must not survive
+  float blurL = clamp(log2(1.0 + sqrt(rp.z) * 130.0 + length(grad) * 70.0), 0.0, 5.0);
+  vec3 refl = textureLod(uRefl, suv + ro2, blurL).rgb;
+  // The mirrored render already holds the sky (clouds included) and everything standing on the water. It is used for
+  // every facet, steep or not: switching steep facets to the sky colour draws bright lines along every ripple crest
+  // wherever the mirror shows something dark (the hull). Only far out, where the mirror is off screen, the sky fills in
   vec3 R = reflect(-V, N); R.y = abs(R.y);
-  refl = mix(refl, skyBase(R), smoothstep(0.05, 0.25, length(grad)) * 0.4);
+  vec2 su2 = suv + ro2;
+  float outside = max(max(-su2.x, su2.x - 1.0), max(-su2.y, su2.y - 1.0));
+  refl = mix(refl, skyBase(R), smoothstep(0.0, 0.05, outside));
   vec3 col = below * (1. - F) + refl * F;
   // Sun glints and the glitter path
   vec3 Hh = normalize(L + V);
@@ -145,7 +163,9 @@ void main(){
   // slope spread that the pixel cannot resolve: the ripples finer than a pixel, plus (far away) the whole Cox-Munk
   // distribution for this wind (sigma^2 = 0.003 + 0.00512 U), which is what makes the glitter path wide
   float cm = 0.003 + 0.00512 * uWindS * (0.6 + 0.8 * g);
-  float sig = sqrt(0.0006 + rp.z + cm * smoothstep(15.0, 600.0, dist));
+  // near the camera the capillary roughness (sub-millimetre) still spreads the highlight: without this floor the sun
+  // shows as thin contour lines along the ripples
+  float sig = sqrt(0.0055 + rp.z + cm * smoothstep(0.0, 400.0, dist));
   float gl = glints(p + vec2(0., uTime * 0.12), need, fw, sig, 1.7);
   float Fs = 0.02 + 0.98 * pow(1. - max(dot(V, Hh), 0.), 5.);
   col += uSunIrr * 40.0 * Fs * gl * 0.3 * smoothstep(0.02, 0.2, g + 0.1) * shd;
@@ -211,7 +231,7 @@ function h12(x, y) {
 export function makeRipples(windDir, A = [], B = []) {
   const rows = [];
   for (let i = 0; i < 40; i++) {
-    const lam = 3.2 * Math.pow(0.87, i) * (0.8 + 0.4 * h12(i, 9.1));
+    const lam = 6.0 * Math.pow(0.855, i) * (0.8 + 0.4 * h12(i, 9.1));
     const ang = windDir + (h12(i, 3.1) - 0.5) * 2.8;
     const k = 2 * Math.PI / lam, om = Math.sqrt(9.81 * k + 0.074 / 1000 * k * k * k);
     const ss = (e0, e1, x) => { const t = Math.min(1, Math.max(0, (x - e0) / (e1 - e0))); return t * t * (3 - 2 * t); };

@@ -39,7 +39,7 @@ three.js で動きます。写真・動画・手描きのテクスチャ・既�
 
 ## 使い方
 ```sh
-make serve       # http://127.0.0.1:8793/ で開く
+make serve       # http://127.0.0.1:8795/ で開く
 make setup       # 焼き直しと確認用の Python 環境（numpy・scipy・Playwright）
 make bake        # 船・港町・島を焼き直す（船 約5分、港 約3分、島 約4分）
 make preview     # 船だけを Cycles で数方向から描いて確かめる

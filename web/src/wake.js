@@ -94,6 +94,9 @@ export class Wake {
             if (kk != 0.0) vd += kk * texture2D(uS, uv + vec2(float(i), float(j)) * uTexel).r;
           }
           float hn = (s.r * (2.0 - uA) - s.g - uGdt2 * vd) / (1.0 + uA);
+          // bleed off grid-scale ripple (the kernel does not resolve it and it shows as a saw edge on the hull)
+          hn = mix(hn, (hl + hr + hd + hu) * 0.25, 0.12);
+          hn = clamp(hn, -0.7, 0.7);
           vec2 w = uOrigin + (uv - 0.5) * uSize;           // world xz of this cell
           vec2 fwd = uShipF, side = vec2(fwd.y, -fwd.x);   // side points to port in three.js axes (x left)
           vec2 d = w - uShipP.xz;
@@ -101,9 +104,9 @@ export class Wake {
           float sdf = hullSDF(q);
           float spd = length(uShipV);
           // inside the waterline the hull holds the surface down; its edge is soft over ~0.4 m
-          float inside = smoothstep(0.3, -0.3, sdf) * uSub;
+          float inside = smoothstep(1.2, -1.0, sdf) * uSub;     // a soft footprint: a sharp one only makes short, spiky waves
           // at rest the hull just floats (no groove round it); under way it pushes a trough along its sides
-          float press = -0.05 * spd - uHeave * 0.6;
+          float press = -0.035 * spd - uHeave * 0.5;
           hn = mix(hn, press, inside * 0.2 * smoothstep(0.2, 1.5, spd + abs(uHeave) * 3.0));
           // foam: along the hull sides (water sheared past the planking), heavier at the bow and in the stern eddies
           float band = exp(-max(sdf, 0.0) * 2.2) * smoothstep(-0.05, 0.25, sdf);    // just outside the planking only

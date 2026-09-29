@@ -1,4 +1,4 @@
-PORT ?= 8793
+PORT ?= 8795
 PY ?= .venv/bin/python
 BLENDER ?= blender
 B = $(BLENDER) -b --factory-startup --python-exit-code 1
@@ -7,7 +7,7 @@ C = build/check
 
 .PHONY: serve setup bake ship port islands preview check clean
 
-# Open http://127.0.0.1:8793/ after this
+# Open http://127.0.0.1:8795/ after this
 serve:
 	python3 -m http.server $(PORT) --bind 127.0.0.1 --directory web
 

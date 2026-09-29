@@ -45,6 +45,9 @@
   #title { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--ink);
            background: radial-gradient(ellipse at center, rgba(10,14,18,.15), rgba(10,14,18,.55)); transition: opacity 1.5s; text-align: center; }
   #title.gone { opacity: 0; pointer-events: none; }
+  #endcard { position: absolute; left: 0; right: 0; top: 40%; text-align: center; color: #f2ede4; opacity: 0; pointer-events: none; text-shadow: 0 2px 30px rgba(0,0,0,.5); }
+  #endcard b { display: block; font: 600 84px/1 'Shippori Mincho', serif; letter-spacing: .32em; margin-left: .32em; }
+  #endcard i { display: block; font: 500 17px/1 'Shippori Mincho', serif; font-style: normal; letter-spacing: .5em; margin-top: 26px; color: rgba(242,237,228,.75); }
   #stage:has(#title:not(.gone)) #hud { opacity: 0; }
   #hud { transition: opacity 1.5s; }
   #title h1 { font: 600 76px/1 'Shippori Mincho', serif; letter-spacing: .3em; margin: 0 0 0 .3em; text-shadow: 0 2px 24px rgba(0,0,0,.35); }
@@ -73,6 +76,7 @@
     <div id="anchor">錨泊中</div>
     <div class="keys"><div id="trim"></div><kbd>A</kbd><kbd>D</kbd> 舵　<kbd>W</kbd><kbd>S</kbd> 帆を上げ下げ　<kbd>Q</kbd><kbd>E</kbd> 帆の向き　<kbd>T</kbd> 船頭まかせ　<kbd>R</kbd> 櫓　<kbd>Space</kbd> 錨　<kbd>C</kbd> 視点</div>
   </div>
+  <div id="endcard"><b>潮待ち</b><i>弁才船で瀬戸内を渡る</i></div>
   <div id="title">
     <h1>潮待ち</h1>
     <p class="sub">弁才船で瀬戸内を渡る</p>

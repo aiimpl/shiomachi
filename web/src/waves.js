@@ -41,9 +41,10 @@ export function makeSea({ wind = 6, windDir = 0.6, swellDir = 1.4, swellH = 0.35
     const k = w * w / G;
     comps.push({ dx: Math.cos(ang), dz: Math.sin(ang), k, w, a, ph: rnd() * 6.283 });
   }
-  // Gerstner steepness: keep the sum of Q k a below ~0.75 so crests sharpen without looping
+  // Gerstner steepness: keep the sum of Q k a below ~0.4. Sharper crests read as thin bright lines that run straight
+  // across the whole sea (the crests of a sum of long-crested waves), which real water does not show
   const sumKA = comps.reduce((s, c) => s + c.k * c.a, 0);
-  const q = Math.min(1.0, 0.75 / Math.max(sumKA, 1e-6));
+  const q = Math.min(0.8, 0.4 / Math.max(sumKA, 1e-6));
   for (const c of comps) c.q = q;
   const hs = 4 * Math.sqrt(comps.reduce((s, c) => s + c.a * c.a / 2, 0));
   return { comps, wind, windDir, hs, wp };
@@ -77,7 +78,9 @@ vec3 gerstner(vec2 p, float t, float fw){
   }
   return o;
 }
-// returns (dh/dx, dh/dz) of the displaced surface, and the Jacobian determinant in w (below ~0.4 the crest is folding: foam)
+// returns (dh/dx, dh/dz) of the displaced surface, and the Jacobian determinant in w (below ~0.4 the crest is folding: foam).
+// Only the long components (lambda > ~15 m) tilt the shading normal: the short ones have perfectly straight, endless crests
+// that show as regular streaks and chevrons across the sea; the ripples (ocean.js), broken into groups, cover that scale
 vec4 gerstnerSlope(vec2 p, float t, float fw){
   vec2 g = vec2(0.0); float jxx = 1.0, jzz = 1.0, jxz = 0.0, lift = 0.0;
   for (int i = 0; i < NW; i++){
@@ -85,12 +88,12 @@ vec4 gerstnerSlope(vec2 p, float t, float fw){
     float th = A.z * dot(A.xy, p) - A.w * t + B.z;
     float a = B.x * uSeaK * waveFade(A.z, fw);
     float wa = A.z * a, c = cos(th), s = sin(th);
-    g += A.xy * wa * c;
+    g += A.xy * wa * c * smoothstep(0.42, 0.9, 6.2831853 / A.z / 16.0);
     lift += B.y * wa * s;
     jxx -= B.y * wa * A.x * A.x * s; jzz -= B.y * wa * A.y * A.y * s; jxz -= B.y * wa * A.x * A.y * s;
   }
   // divide by the vertical compression so crests get steeper than the plain sine sum
-  float den = max(1.0 - lift, 0.25);
+  float den = max(1.0 - lift, 0.6);
   return vec4(g / den, 0.0, jxx * jzz - jxz * jxz);
 }
 `;

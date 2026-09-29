@@ -22,6 +22,7 @@ import { Sound } from './audio.js';
 import { Tide } from './tide.js';
 import { makeCrew } from './people.js';
 import { makeBoats } from './boats.js';
+import { Film, FILM_LEN } from './film.js';
 
 const QS = new URLSearchParams(location.search);
 const RENDER = QS.has('render');
@@ -86,7 +87,9 @@ const seaU = seaUniforms(sea);
 
 // ---- Post, reflection and shadows
 const post = new Post(renderer, W * PR, H * PR, { samples: MOBILE ? 0 : 4, levels: QL.bloomLevels });
-const rtRefl = new THREE.WebGLRenderTarget(Math.round(W * PR * 0.5), Math.round(H * PR * 0.5), { type: THREE.HalfFloatType, depthBuffer: true });
+// mirrored world for the water; mipmapped so rough water can read it blurred
+const rtRefl = new THREE.WebGLRenderTarget(Math.round(W * PR * 0.5), Math.round(H * PR * 0.5),
+  { type: THREE.HalfFloatType, depthBuffer: true, generateMipmaps: true, minFilter: THREE.LinearMipmapLinearFilter });
 const shadows = new Shadows(renderer, sunDir, { shipRes: MOBILE ? 1024 : 1536 });
 const patch = (m, o) => patchHaze(patchShadow(m, shadows), skyU, o);
 
@@ -123,7 +126,7 @@ boat.ctl.hoist = 0; boat.hoist = 0;
 const wake = new Wake(renderer, ship.meta.stations);
 const waterScene = new THREE.Scene();
 const ocean = makeOcean({ skyU, seaU, wakeU: wake.uniforms, windU: wind.uniforms, tideU: tide.uniforms, reflTarget: rtRefl, refrTarget: post.refr,
-  shipShadowU: shadows.uniforms, timeU: U.uTime, quality: { oceanRings: MOBILE ? 150 : 240, oceanSeg: MOBILE ? 256 : 420 } });
+  shipShadowU: shadows.uniforms, timeU: U.uTime, quality: { oceanRings: +(QS.get('orings') ?? (MOBILE ? 150 : 240)), oceanSeg: +(QS.get('oseg') ?? (MOBILE ? 256 : 420)) } });
 waterScene.add(ocean.mesh);
 
 // ---- Environment map for the wood's sky reflections: the sky rendered into a small cube
@@ -164,6 +167,25 @@ function checkArrival() {
     hud.message(`${dest.name}に着いた\n${h}時${String(mi).padStart(2, '0')}分　${(logDist / 1000).toFixed(1)}km を ${Math.floor(took)}時間${Math.round((took % 1) * 60)}分`, 12);
   } else if (d < 400 && !boat.ctl.anchor && Math.random() < 0.002) hud.message('港に入ったら Space で錨を入れる', 4);
 }
+// Recording: the scripted film drives the hour, the ship and the camera (film.js)
+let film = null, filmT = 0, filmFade = 1;
+function setHourNow(h) {
+  hour = h; sunDirection(LAT, DAY, hour, sunDir); lightFromSun(); tide.setHour(hour);
+  if (Math.abs(hour - envAt) > 0.08) { rebuildEnv(); envAt = hour; }
+}
+function warm(sec) {
+  const h = 1 / 60;
+  for (let i = 0; i < sec * 60; i++) {
+    stepSim(h);
+    const f = boat.forward(new THREE.Vector3());
+    wake.step(h, { pos: boat.pos, fwd: new THREE.Vector2(f.x, f.z).normalize(), vel: new THREE.Vector2(boat.vel.x, boat.vel.z), heave: boat.heave, sub: 1 });
+  }
+}
+if (RENDER) {
+  window.__freezeClock = true;
+  document.getElementById('hud').classList.add('hide');
+  film = new Film({ boat, wind, sea, setHour: setHourNow, warm, ports: islands.map?.ports ?? [], camera });
+}
 const titleEl = document.getElementById('title'), goBtn = document.getElementById('go');
 if (started) titleEl.classList.add('gone');
 goBtn.disabled = false; goBtn.textContent = '舟を出す';
@@ -190,7 +212,10 @@ function nearestLand() {
 
 const clipUnder = new THREE.Plane(new THREE.Vector3(0, -1, 0), 0);
 function renderReflection() {
-  if (trees) trees.group.visible = false;         // trees are too small in the reflection to be worth drawing twice
+  // trees are too small in the reflection to be worth drawing twice; ropes are thinner than a pixel of the
+  // half-resolution mirror and only alias into streaks
+  if (trees) trees.group.visible = false;
+  ship.ropeGroup.visible = false;
   world.scale.y = -1; world.updateMatrixWorld(true);
   shadows.uniforms.uMirror.value = -1;
   renderer.clippingPlanes = [clipUnder];
@@ -198,6 +223,7 @@ function renderReflection() {
   renderer.clippingPlanes = [];
   world.scale.y = 1; world.updateMatrixWorld(true);
   if (trees) trees.group.visible = true;
+  ship.ropeGroup.visible = true;
   shadows.uniforms.uMirror.value = 1;
   renderer.setRenderTarget(null);
 }
@@ -254,6 +280,7 @@ function frame(dt) {
   crew.update(simT, boat.rudder);
   boats?.update(dt, simT, camera.position);
   cam.update(dt, boat);
+  if (film) { const r = film.apply(filmT); filmFade = r.fade; }
   ocean.update(camera);
   islands.update(camera.position);
   trees?.update(camera.position);
@@ -263,7 +290,7 @@ function frame(dt) {
   renderReflection();
   // the eye adapts: exposure rises as the light goes (about 4x by full night)
   const adapt = 1 + 3.2 * THREE.MathUtils.smoothstep(-sunDir.y, -0.04, 0.16);
-  post.render(scene, camera, { exposure: EXPOSURE * adapt, t: simT, overlay: waterScene, thresh: 1.6 * adapt });
+  post.render(scene, camera, { exposure: EXPOSURE * adapt * filmFade, t: simT, overlay: waterScene, thresh: 1.6 * adapt });
   hud.update({ boat, hour, wind, tide, dest, dt });
   checkArrival();
   // lamps: lit as the sun goes down
@@ -336,8 +363,13 @@ window.__sim = (sec, ctl) => {
 };
 window.__renderAt = (f, fps) => {
   const target = f / fps;
+  if (film) {
+    while (filmT < target - 1e-6) { const d = Math.min(1 / fps, target - filmT); filmT += d; frame(d); }
+    return { ...window.__state(), shot: film.shotAt(filmT)[0], hour: +hour.toFixed(3) };
+  }
   while (simT < target - 1e-6) frame(Math.min(1 / fps, target - simT));
   return window.__state();
 };
+window.__filmLen = FILM_LEN;
 window.__ready = true;
 if (!RENDER) requestAnimationFrame(loop);
